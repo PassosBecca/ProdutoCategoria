@@ -79,18 +79,51 @@ def listar_categorias():
             #     print(f"   {produto.nome}")
     print(f"----------------------------------------- ----------")
 
+
+def seleciona_categoria():
+    nome_parcial = input("Digite uma parte do nome da categoria desejada :")
+    # select *from categorias where categorias.nome LIKE "%...%"
+    stmt = select(Categoria).where(Categoria.nome.ilike(f"%{nome_parcial}%")).order_by("nome")
+    with Session(motor) as sessao:
+        rset = sessao.execute(stmt).scalars()
+        contador = 1
+        ids = list()
+        for categoria in rset:
+            print(f"{contador:3d} - {categoria.nome:}")
+            contador = contador + 1
+        cod = int(input("Digite o numero da categoria desejada :"))
+        categoria = list(rset)[cod -1]
+    return categoria
+
+def altear_categoria():
+    id_categoria = seleciona_categoria()
+    with Session(motor) as sessao:
+        categoria = sessao.get(Categoria, id_categoria)
+        print(f"Nome atual da categoria : {categoria.nome}")
+        novo_nome = input("qual vai ser o novo nome :")
+        categoria.nome = novo_nome
+        sessao.commit()
+    return
+
+
+
 if __name__ == "__main__":
     seed_database()
     while True:
         print("Menu de Opções")
         print("1. Incluir Categoria")
         print("2. Listar Categorias")
+        print("3. Alterar Categoria")
+        print("4. Remover Categoria")
         print("0. Sair")
         opcao = int(input("Qual opcao? "))
         if opcao == 1:
             incluir_categoria()
         elif opcao == 2:
             listar_categorias()
+        elif opcao == 3 :
+            altear_categoria()
+
         elif opcao == 0:
             exit(0)
         else:
